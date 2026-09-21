@@ -7,12 +7,13 @@ import time
 from openai import OpenAI
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
+from chunker import extract_text_from_pdf, chunk_text
+
+
+
 load_dotenv()
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-)
+client = None
 
 DATA_PATH = "data/class 11 ncert"
 
@@ -27,7 +28,24 @@ def extract_text_from_pdf(pdf_path):
     doc.close()
     return text
 
+def load_chunks():
+    """
+    Load all PDFs and return their chunks.
+    """
+    pdf_folder = "data/class 11 ncert"
 
+    all_chunks = []
+
+    for file in os.listdir(pdf_folder):
+        if file.endswith(".pdf"):
+            pdf_path = os.path.join(pdf_folder, file)
+
+            text = extract_text_from_pdf(pdf_path)
+            chunks = chunk_text(text)
+
+            all_chunks.extend(chunks)
+
+    return all_chunks
 
 def load_all_pdfs():
 
@@ -71,7 +89,6 @@ if __name__ == "__main__":
             chunks.append(text[i:i+size])
 
     print("Total Chunks :", len(chunks))
-
     # -------- Embeddings --------
     '''all_embeddings = []
 
